@@ -36,6 +36,18 @@ async function run(){
 
         // comment api
 
+        app.get('/comment', async(req, res) =>{
+            let query = {}
+            if(req.query.service){
+                query = {
+                    service : req.query.service
+                }
+            }
+            const cursor = commentCollection.find(query);
+            const comments = await cursor.toArray()
+            res.send(comments)
+        })
+
         app.post('/comment', async(req, res) =>{
             const comment = req.body;
             const result = await commentCollection.insertOne(comment);
