@@ -17,6 +17,7 @@ async function run() {
     try {
         const serviceCollection = client.db('photograpy').collection('services');
         const commentCollection = client.db('photograpy').collection('comments')
+        const cameraCollection = client.db('photograpy').collection('cameras')
 
         app.get('/services', async (req, res) => {
             const query = {};
@@ -48,8 +49,10 @@ async function run() {
             res.send(comments)
         })
 
-        app.get('/comment', async (req, res) => {
+        app.get('/comments', async (req, res) => {
             let query = {}
+            console.log('faisal');
+            console.log(req.query.service)
             if (req.query.service) {
                 query = {
                     service: req.query.service
@@ -64,6 +67,22 @@ async function run() {
             const comment = req.body;
             const result = await commentCollection.insertOne(comment);
             res.send(result)
+        })
+
+        app.delete('/comment/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await commentCollection.deleteOne(query);
+            res.send(result)
+        })
+
+        // camera api
+
+        app.get('/camera', async(req, res) =>{
+            const query = {}
+            const cursor = cameraCollection.find(query);
+            const cameras = await cursor.toArray()
+            res.send(cameras)
         })
     }
     finally {
