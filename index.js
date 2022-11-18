@@ -34,7 +34,8 @@ async function run() {
         const serviceCollection = client.db('photograpy').collection('services');
         const commentCollection = client.db('photograpy').collection('comments');
         const cameraCollection = client.db('photograpy').collection('cameras');
-        const bookmarkCollection = client.db('photograpy').collection('bookmark')
+        const bookmarkCollection = client.db('photograpy').collection('bookmark');
+        const bestCollection = client.db('photograpy').collection('best');
 
         app.post('/jwt', (req, res) => {
             const user = req.body;
@@ -103,7 +104,7 @@ async function run() {
             res.send(comment);
         })
 
-        app.patch('/comment/:id',verifyJWT, async (req, res) => {
+        app.patch('/comment/:id', verifyJWT, async (req, res) => {
             const decoded = req.decoded;
             if (decoded.email !== req.query.email) {
                 res.status(403).send({ message: 'unauthorized access' })
@@ -142,7 +143,12 @@ async function run() {
         })
 
         app.get('/bookmark', async (req, res) => {
-            const query = {}
+            let query = {}
+            if (req.query.email) {
+                query = {
+                    email: req.query.email
+                }
+            }
             const cursor = bookmarkCollection.find(query)
             const bookmark = await cursor.toArray()
             res.send(bookmark);
@@ -162,6 +168,14 @@ async function run() {
             const cursor = cameraCollection.find(query);
             const camera = await cursor.toArray()
             res.send(camera);
+        })
+
+        // best collection api 
+        app.get('/bestcollection', async (req, res) => {
+            const query = {}
+            const cursor = bestCollection.find(query);
+            const best = await cursor.toArray()
+            res.send(best);
         })
 
     }
