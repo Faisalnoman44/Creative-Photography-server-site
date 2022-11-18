@@ -34,6 +34,7 @@ async function run() {
         const serviceCollection = client.db('photograpy').collection('services');
         const commentCollection = client.db('photograpy').collection('comments');
         const cameraCollection = client.db('photograpy').collection('cameras');
+        const bookmarkCollection = client.db('photograpy').collection('bookmark')
 
         app.post('/jwt', (req, res) => {
             const user = req.body;
@@ -94,6 +95,31 @@ async function run() {
             res.send(comments)
         })
 
+
+        app.get('/comment/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const comment = await commentCollection.findOne(query);
+            res.send(comment);
+        })
+
+        app.patch('/comment/:id',verifyJWT, async (req, res) => {
+            const decoded = req.decoded;
+            if (decoded.email !== req.query.email) {
+                res.status(403).send({ message: 'unauthorized access' })
+            }
+            const id = req.params.id;
+            const comment = req.body.comment;
+            const query = { _id: ObjectId(id) }
+            const updatedComment = {
+                $set: {
+                    comment: comment,
+                },
+            }
+            const result = await commentCollection.updateOne(query, updatedComment);
+            res.send(result)
+        })
+
         app.post('/comment', async (req, res) => {
             const comment = req.body;
             const result = await commentCollection.insertOne(comment);
@@ -107,21 +133,37 @@ async function run() {
             res.send(result)
         })
 
+        //bookmark api
+        app.post('/bookmark', async (req, res) => {
+            const bookmark = req.body
+            const result = await bookmarkCollection.insertOne(bookmark)
+            res.send(result);
+
+        })
+
+        app.get('/bookmark', async (req, res) => {
+            const query = {}
+            const cursor = bookmarkCollection.find(query)
+            const bookmark = await cursor.toArray()
+            res.send(bookmark);
+        })
+
+        app.delete('/bookmark/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await bookmarkCollection.deleteOne(query);
+            res.send(result)
+        })
+
         // camera api
 
         app.get('/camera', async (req, res) => {
             const query = {}
             const cursor = cameraCollection.find(query);
             const camera = await cursor.toArray()
-            res.send(camera)
+            res.send(camera);
         })
 
-        // app.get('/camera', async(req, res) =>{
-        //     const query = {}
-        //     const cursor = cameraCollection.find(query);
-        //     const cameras = await cursor.toArray()
-        //     res.send(cameras)
-        // })
     }
     finally {
 
